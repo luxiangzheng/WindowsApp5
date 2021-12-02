@@ -134,7 +134,10 @@ Public Class Form1
 
                 Else
                     Invoke(New Job_demo(AddressOf new_log.L2log), "本地服务器：server下线")
+
                 End If
+            Else
+                Label2.Text = "服务端已打开，请连接"
             End If
         Catch ex As Exception
             Invoke(New Job_L2(AddressOf l2_logname), "本地服务器：", "IP和端口号错误或已占用")
