@@ -8,19 +8,29 @@ Public Class Form1
     Public L2Server As TcpSvr
     Delegate Sub ReceiveDelegate(Sender As Object, e As NetEventArgs)
     Delegate Sub Job_demo(jobdemo As String)
-
+    Delegate Sub setlable_text(renwu As Integer)
     Delegate Sub Job_L2(renwu As String, msg As String)
+
     Public log_name As String = "L2通讯和采集"
     Public mySql_Connection As MySqlConnection
     Dim mysql_net As New Mysql_Connect
     Dim new_log As New Logdemo
+    Dim log_localname As New log_local
+    Dim i As Integer = 0
+    Public lable_name As Thread
 #End Region
 #Region "建立连接"
     Private Sub Form1_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         L2Server = New TcpSvr(IPAddress.Parse("127.0.0.1"), 8001, 10, New Coder(Coder.EncodingMothord.ASCII), AppDomain.CurrentDomain.BaseDirectory)
         AddHandler L2Server.RecvData, AddressOf L2RecvData
         AddHandler L2Server.ClientConn, AddressOf L2ClientConnect
+
+        'Form1.MdiChildren = log_local
         'AddHandler L2Server.ClientClose, AddressOf L2ClientClosed
+
+        lable_name = New Thread(AddressOf set_name)
+        'Thread_name.Abort()
+        lable_name.Start()
     End Sub
 #End Region
 #Region "接收数据"
@@ -127,9 +137,11 @@ Public Class Form1
         Try
             If L2Server.IsRun = False Then
                 L2Server.Start()
+                MessageBox.Show("服务端已建立，请连接")
                 If L2Server.IsRun Then
                     Invoke(New Job_demo(AddressOf new_log.L2log), "本地服务器：server已上线,允许L2连接")
                     Label2.Text = "服务端已打开，请连接"
+
 
 
                 Else
@@ -151,7 +163,11 @@ Public Class Form1
     Public Sub l2_logname(renwu As String, msg As String)
         Try
             PrepareListView(ListView1)
+
             ListView1.Items.Insert(0, New ListViewItem(New String() {Format(Now(), "yyyy/MM/dd HH:mm:ss"), renwu, msg}))
+            log_localname.ListView1.Items.Insert(0, New ListViewItem(New String() {Format(Now(), "yyyy/MM/dd HH:mm:ss"), renwu, msg}))
+            'ListView2.Items.Insert(0, ListView1.Items(0))
+            'Label2.Text = ListView1.Items(0).SubItems(1).Text
             If ListView1.Items.Count > 300 Then
                 ListView1.Items.RemoveAt(ListView1.Items.Count - 1)
             End If
@@ -177,5 +193,42 @@ Public Class Form1
         End If
     End Sub
 
+    Private Sub Button2_Click(sender As Object, e As EventArgs) Handles Button2.Click
+        My.Forms.log_local.ShowDialog()
+    End Sub
 
+    Sub set_name()
+        'Label1.Text = "标题"
+
+        Try
+            While True
+
+
+                'ListView1.Items.Clear()
+
+
+                Invoke(New setlable_text(AddressOf set_text), i)
+                'Label1.Text = i
+                'While i < Form1.ListView1.Items.Count
+                ' ListView1.Items.Insert(0, New ListViewItem(New String() {Form1.ListView1.Items(i).SubItems(0).Text, Form1.ListView1.Items(i).SubItems(1).Text, Form1.ListView1.Items(i).SubItems(2).Text}))
+                i = i + 1
+                'End While
+                Thread.Sleep(4000)
+            End While
+        Catch ex As Exception
+            'MessageBox.Show(ex.ToString)
+        End Try
+
+    End Sub
+
+    Private Sub set_text(ByVal a As Integer)
+        'ListView1.Items.Clear()
+        Label3.Text = a
+        ' Dim i As Integer = Form1.ListView1.Items.Count - 1
+        'While i >= 0
+        '    ListView1.Items.Insert(0, New ListViewItem(New String() {Form1.ListView1.Items(i).SubItems(0).Text, Form1.ListView1.Items(i).SubItems(1).Text, Form1.ListView1.Items(i).SubItems(2).Text}))
+        '    i = i - 1
+        'End While
+
+    End Sub
 End Class
